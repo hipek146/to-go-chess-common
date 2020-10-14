@@ -1,22 +1,13 @@
 {
-	"files": [
-		"common/*.ts",
-		"common/*/*.ts"
-	],
-	"compilerOptions": {
-		"lib": ["dom", "es2017"],
-		"target": "es5",
-		"allowJs": true,
-		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
-		"strict": true,
-		"strictPropertyInitialization": false,
-		"forceConsistentCasingInFileNames": true,
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"noEmit": true
-	}
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true
+  },
+  "typeRoots": [
+    "../node_modules/@types"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
