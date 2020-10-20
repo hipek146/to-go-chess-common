@@ -26,7 +26,13 @@ const g2 = new Gracz();
 
 game.init({canvas: c, whitePlayer: g1, blackPlayer: g2});
 
-g1.move("Re4");
-g2.move("Ne5");
-g1.move("Kh6");
-g2.move("a6");
+g1.move("a4");
+g2.move("Nf6");
+g1.move("Ra3");
+g2.move("Na6");
+g1.move("h4");
+g2.move("h5");
+g1.move("Rhh3");
+g2.move("e5");
+g1.move("Ke2");
+g2.move("Bb4");
