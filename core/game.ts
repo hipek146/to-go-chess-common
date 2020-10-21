@@ -74,8 +74,9 @@ export class Game {
 
 		let symbol: string;
 		let offset = 0;
+		let type: 'move' | 'capture' = 'move';
 
-		if(['r', 'n', 'b', 'q', 'k'].includes(move[0].toLowerCase())) {
+		if(['R', 'N', 'B', 'Q', 'K'].includes(move[0])) {
 			symbol = move[0].toLowerCase();
 			offset = 1;
 		}
@@ -85,7 +86,8 @@ export class Game {
 
 		let specifiedRow: number;
 		let specifiedColumn: number;
-		if(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'x'].includes(move[offset + 1].toLowerCase())) {
+
+		if(move[offset] !== 'x' && ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'x'].includes(move[offset + 1])) {
 			if (Number(move[offset]) >= 1 && Number(move[offset]) <= 8) {
 				specifiedRow = Number(move[offset]);
 			}
@@ -101,6 +103,11 @@ export class Game {
 			offset++;
 		}
 
+		if (move[offset] === 'x') {
+			type = 'capture';
+			offset++;
+		}
+
 		const destinationColumn = move[offset].charCodeAt(0) - 'a'.charCodeAt(0) + 1;
 		const destinationRow = Number(move[offset + 1]);
 
@@ -111,7 +118,7 @@ export class Game {
 		}
 
 		let pieces = this.boardInfo.find(symbol, this.turn.color).filter(piece => {
-			return piece.checkMove(this.boardInfo, destinationRow, destinationColumn);
+				return piece.checkMove(this.boardInfo, destinationRow, destinationColumn, type);
 		})
 		pieces = pieces.filter(piece =>{
 			if(specifiedRow) return piece.row === specifiedRow;
@@ -124,7 +131,7 @@ export class Game {
 		const piece = pieces[0];
 		const oldRow = piece.row;
 		const oldColumn = piece.column;
-		piece.move(this.boardInfo, destinationRow, destinationColumn);
+		piece.move(destinationRow, destinationColumn);
 		this.boardInfo.moved(piece, oldRow, oldColumn);
 
 		//TO DO - bez bicia
