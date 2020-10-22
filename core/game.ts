@@ -1,6 +1,7 @@
 import { Canvas } from '../interfaces/canvas';
 import { Player } from '../interfaces/player';
-import { Piece, Pawn, Bishop, King, Knight, Queen, Rook } from '../pieces';
+import { Piece, Pawn, Bishop, King, Knight, Queen, Rook, PieceConfig } from '../pieces';
+import { BoardInfo } from './board-info';
 
 export class Game {
 
@@ -13,7 +14,7 @@ export class Game {
 
 	private positionFEN: string;
 
-	private pieces: Piece[];
+	private boardInfo: BoardInfo = new BoardInfo();
 
 	private castlingAvailability = {
 		white: {kingside: true, queenside: true},
@@ -73,13 +74,38 @@ export class Game {
 
 		let symbol: string;
 		let offset = 0;
+		let type: 'move' | 'capture' = 'move';
 
-		if(['r', 'n', 'b', 'q', 'k'].includes(move[0].toLowerCase())) {
+		if(['R', 'N', 'B', 'Q', 'K'].includes(move[0])) {
 			symbol = move[0].toLowerCase();
 			offset = 1;
 		}
 		else {
 			symbol = 'p'
+		}
+
+		let specifiedRow: number;
+		let specifiedColumn: number;
+
+		if(move[offset] !== 'x' && ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'x'].includes(move[offset + 1])) {
+			if (Number(move[offset]) >= 1 && Number(move[offset]) <= 8) {
+				specifiedRow = Number(move[offset]);
+			}
+			else {
+				const specifieLetter = move[offset].charCodeAt(0) - 'a'.charCodeAt(0) + 1;
+				if (specifieLetter >= 1 && specifieLetter <= 8) {
+					specifiedColumn = specifieLetter;
+				}
+				else {
+					throw new Error ('invalid move');
+				}
+			}
+			offset++;
+		}
+
+		if (move[offset] === 'x') {
+			type = 'capture';
+			offset++;
 		}
 
 		const destinationColumn = move[offset].charCodeAt(0) - 'a'.charCodeAt(0) + 1;
@@ -91,9 +117,22 @@ export class Game {
 			throw new Error ('invalid move');
 		}
 
-		//TO DO - walidacja dla figur
-		const piece = this.pieces.filter(piece => piece.getSymbol() === symbol)[0]
+		let pieces = this.boardInfo.find(symbol, this.turn.color).filter(piece => {
+				return piece.checkMove(this.boardInfo, destinationRow, destinationColumn, type);
+		})
+		pieces = pieces.filter(piece =>{
+			if(specifiedRow) return piece.row === specifiedRow;
+			else if(specifiedColumn) return piece.column === specifiedColumn;
+			else return true;
+		})
+		if (pieces.length !== 1) {
+			throw new Error ('invalid move');
+		}
+		const piece = pieces[0];
+		const oldRow = piece.row;
+		const oldColumn = piece.column;
 		piece.move(destinationRow, destinationColumn);
+		this.boardInfo.moved(piece, oldRow, oldColumn);
 
 		//TO DO - bez bicia
 		if (piece.getSymbol() !== 'p') {
@@ -106,13 +145,14 @@ export class Game {
 		if (this.turn.color === 'black') {
 			this.fullmoveNumber++;
 		}
+		//console.log(this.boardInfo);
 		this.changeTurn();
 	}
 
 	private updateGameWithFEN() {
 		const positionFEN = this.positionFEN;
 
-		this.pieces = [];
+		//this.pieces = [];
 
 		let column = 1;
 		let row = 8;
@@ -126,7 +166,7 @@ export class Game {
 			}
 			const number = Number(positionFEN[i]);
 			if (isNaN(number)) {
-				this.pieces.push(this.mapToPiece(positionFEN[i], row, column));
+				this.boardInfo.set(this.mapToPiece(positionFEN[i], row, column));;
 				column++;
 			}
 			else {
@@ -181,41 +221,31 @@ export class Game {
 	}
 
 	private updateFENWithGame() {
-		let FEN = '8/8/8/8/8/8/8/8'
-		this.pieces.forEach(piece => {
-			let y = 8;
-			let x = 1;
-			let i = 0;
-			while(i < FEN.length) {
-				if (y === piece.row) {
-					const number = Number(FEN[i]);
-					if (isNaN(number)) {
-						x++;
+		let FEN = '';
+		for (let row = 8; row > 0; row--) {
+			let blank = 0;
+			for (let column = 1; column <= 8; column++) {
+				let piece = this.boardInfo.get(row, column);
+				if (piece) {
+					if (blank) {
+						FEN += blank;
 					}
-					else {
-						x += number;
-					}
-					if (x > piece.column) {
-						const start = (i > 0) ? FEN.substring(0, i) : '';
-						const end = (i < FEN.length - 1) ? FEN.substr(i + 1) : '';
-						let firstPart = (number - (x - piece.column)).toString();
-						if (firstPart === '0') firstPart = '';
-						let lastPart = ((x - piece.column) - 1).toString();
-						if (lastPart === '0') lastPart = '';
-						let symbol =  piece.getSymbol();
-						if (piece.color === 'white') {
-							symbol = symbol.toUpperCase();
-						}
-						FEN = start + firstPart + symbol + lastPart + end;
-						break;
-					}
+					FEN += piece.color === 'white' ?
+						piece.getSymbol().toUpperCase() : piece.getSymbol().toLowerCase();
+					blank = 0;
 				}
-				if (FEN[i] === '/') {
-					y--;
+				else {
+					blank++;
 				}
-				i++;
 			}
-		});
+			if (blank) {
+				FEN += blank;
+			}
+			if (row > 1) {
+				FEN += '/'
+			}
+		}
+
 		this.positionFEN = FEN + ' ' 
 			+ (this.turn.color === 'white' ? 'w' : 'b')
 			+ ' KQkq - '
@@ -225,7 +255,7 @@ export class Game {
 
 	private mapToPiece(letter: string, row: number, column: number) {
 		const color = letter.toUpperCase() === letter ? 'white' : 'black';
-		const config = {
+		const config: PieceConfig = {
 			color, row, column
 		}
 		switch (letter.toLowerCase()) {
