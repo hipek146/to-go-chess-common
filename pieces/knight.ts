@@ -1,3 +1,4 @@
+import { PieceConfig } from ".";
 import { BoardInfo } from "../core/board-info";
 import { Move, Piece } from "./piece";
 
@@ -18,5 +19,12 @@ export class Knight extends Piece {
         this.pushMove(boardInfo, moves, row - 1, column - 2);
 
         return moves;
+    }
+
+    copy(): Piece {
+        const config: PieceConfig = {
+            color: this.color, row: this.row, column: this.column
+        }
+        return new Knight(config);
     }
 }

@@ -1,3 +1,4 @@
+import { PieceConfig } from ".";
 import { BoardInfo } from "../core/board-info";
 import { Move, Piece } from "./piece";
 
@@ -32,5 +33,12 @@ export class Bishop extends Piece {
         }
 
         return moves;
+    }
+
+    copy(): Piece {
+        const config: PieceConfig = {
+            color: this.color, row: this.row, column: this.column
+        }
+        return new Bishop(config);
     }
 }
