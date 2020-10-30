@@ -1,8 +1,15 @@
-import { timeStamp } from "console";
-import { Piece } from "../pieces";
+import { Bishop } from "../pieces/bishop";
+import { King } from "../pieces/king";
+import { Knight } from "../pieces/knight";
+import { Pawn } from "../pieces/pawn";
+import { Piece } from "../pieces/piece";
+import { PieceConfig } from "../pieces/piece-config";
+import { Queen } from "../pieces/queen";
+import { Rook } from "../pieces/rook";
 
 export class BoardInfo {
     private board: Piece[][] = [];
+
     enPassant: {
         row: number;
         column: number;
@@ -14,6 +21,10 @@ export class BoardInfo {
     }
     
     allowCheck: boolean;
+
+    halfmoveClock: number = 0;
+    fullmoveNumber: number = 0;
+    turn: 'white' | 'black';
 
     constructor() {
         for (let row = 0; row < 8; row++) {
@@ -105,4 +116,148 @@ export class BoardInfo {
         this.allowCheck = false;
         return {white, black};
     }
+
+    fromFEN(positionFEN: string) {
+        let column = 1;
+        let row = 8;
+        let i: number;
+    
+        for(i = 0; positionFEN[i] !== ' '; i++) {
+            if(positionFEN[i] === '/') {
+                row--;
+                column = 1;
+                continue;
+            }
+            const number = Number(positionFEN[i]);
+            if (isNaN(number)) {
+                this.set(this.mapToPiece(positionFEN[i], row, column));;
+                column++;
+            }
+            else {
+                column += number;
+            }
+        }
+        
+        i++;
+        this.turn = positionFEN[i] === 'w' ? 'white' : 'black';
+        
+        i+=2;
+        const endCastlingIndex = positionFEN.indexOf(' ', i);
+        const castlingFEN = positionFEN.substring(i, endCastlingIndex);
+        this.castlingAvailability = {
+            white: {kingside: false, queenside: false},
+            black: {kingside: false, queenside: false}
+        }
+        if(castlingFEN !== '-') {
+            while (positionFEN[i] != ' ') {
+                switch (positionFEN[i]) {
+                    case 'K':
+                        this.castlingAvailability.white.kingside = true;
+                        break;
+                    case 'Q':
+                        this.castlingAvailability.white.queenside = true;
+                        break;
+                    case 'k':
+                        this.castlingAvailability.black.kingside = true;
+                        break;
+                    case 'q':
+                        this.castlingAvailability.black.queenside = true;
+                        break;
+                }
+                i++;
+            }
+            i--;
+        }
+        i+=2;
+        if (positionFEN[i] !== '-') {
+			const column = positionFEN[i].charCodeAt(0) - 'a'.charCodeAt(0) + 1;
+			i++;
+			const row = Number(positionFEN[i])
+			this.enPassant = {row, column};
+		}
+        i+=2;
+        const endHalfmoveIndex = positionFEN.indexOf(' ', i);
+        const halfmoveFEN = positionFEN.substring(i, endHalfmoveIndex);
+        this.halfmoveClock = Number(halfmoveFEN);
+        i = endHalfmoveIndex + 1;
+        
+        const fullmoveFEN = positionFEN.substring(i);
+        this.fullmoveNumber= Number(fullmoveFEN);
+        return this;
+    }
+
+    public toFEN() {
+		let FEN = '';
+		for (let row = 8; row > 0; row--) {
+			let blank = 0;
+			for (let column = 1; column <= 8; column++) {
+				let piece = this.get(row, column);
+				if (piece) {
+					if (blank) {
+						FEN += blank;
+					}
+					FEN += piece.color === 'white' ?
+						piece.getSymbol().toUpperCase() : piece.getSymbol().toLowerCase();
+					blank = 0;
+				}
+				else {
+					blank++;
+				}
+			}
+			if (blank) {
+				FEN += blank;
+			}
+			if (row > 1) {
+				FEN += '/'
+			}
+        }
+        
+        let castlingAvailability = '';
+		castlingAvailability += this.castlingAvailability.white.kingside ? 'K' : '';
+		castlingAvailability += this.castlingAvailability.white.queenside ? 'Q' : '';
+		castlingAvailability += this.castlingAvailability.black.kingside ? 'k' : '';
+		castlingAvailability += this.castlingAvailability.black.queenside ? 'q' : '';
+
+		if (!castlingAvailability) {
+			castlingAvailability = '-'
+		}
+
+		let enPassant: string;
+		if (!this.enPassant.row || !this.enPassant.column) {
+			enPassant = '-';
+		}
+		else {
+			enPassant = String.fromCharCode('a'.charCodeAt(0) + this.enPassant.column - 1)
+				+ this.enPassant.row;
+		}
+
+		return FEN + ' ' 
+            + (this.turn === 'white' ? 'w' : 'b') + ' '
+            + castlingAvailability + ' '
+            + enPassant + ' '
+            + this.halfmoveClock + ' '
+            + this.fullmoveNumber;
+	}
+
+    private mapToPiece(letter: string, row: number, column: number) {
+		const color = letter.toUpperCase() === letter ? 'white' : 'black';
+		const config: PieceConfig = {
+			color, row, column
+		}
+		switch (letter.toLowerCase()) {
+			case 'r':
+				return new Rook(config);
+			case 'n':
+				return new Knight(config);
+			case 'b':
+				return new Bishop(config);
+			case 'q':
+				return new Queen(config);
+			case 'k':
+				return new King(config);
+			default:
+				return new Pawn(config);
+		}
+	}
+
 }

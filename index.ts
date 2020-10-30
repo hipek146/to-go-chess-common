@@ -26,7 +26,7 @@ const g2 = new Gracz();
 
 game.init({canvas: c, whitePlayer: g1, blackPlayer: g2});
 
-// g1.move("e4");
+// g1.move("d4");
 // g2.move("e5");
 // g1.move("Nf3");
 // g2.move("Nc6");
@@ -57,8 +57,10 @@ game.init({canvas: c, whitePlayer: g1, blackPlayer: g2});
 // g1.move('h8=B');
 // g2.move('a1=R');
 
-game.init({canvas: c, whitePlayer: g1, blackPlayer: g2, positionFEN: '4rkr1/4p1p1/8/8/8/4P1P1/8/4K2R w K - 0 1'});
-g1.move('O-O');
+game.init({canvas: c, whitePlayer: g1, blackPlayer: g2, positionFEN: '3rkr2/3ppp2/1p6/7N/8/8/KP6/8 w - - 0 1'});
+g1.move('b4');
+g2.move('b5');
+g1.move('Ng7');
 
 
 

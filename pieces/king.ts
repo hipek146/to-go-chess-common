@@ -1,6 +1,7 @@
-import { PieceConfig } from ".";
 import { BoardInfo } from "../core/board-info";
-import { Move, Piece } from "./piece";
+import { Move } from "./move";
+import { PieceConfig } from "./piece-config";
+import { Piece } from "./piece";
 
 export class King extends Piece {
     symbol = 'k';

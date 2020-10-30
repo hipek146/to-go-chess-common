@@ -2,7 +2,13 @@ import { Subscription } from 'rxjs';
 import { Subscribable } from 'rxjs/Observable';
 import { Canvas } from '../interfaces/canvas';
 import { Player } from '../interfaces/player';
-import { Pawn, Bishop, King, Knight, Queen, Rook, PieceConfig } from '../pieces';
+import { Bishop } from '../pieces/bishop';
+import { King } from '../pieces/king';
+import { Knight } from '../pieces/knight';
+import { Pawn } from '../pieces/pawn';
+import { PieceConfig } from '../pieces/piece-config';
+import { Queen } from '../pieces/queen';
+import { Rook } from '../pieces/rook';
 import { BoardInfo } from './board-info';
 
 export class Game {
@@ -319,7 +325,9 @@ export class Game {
 		const whiteKing = this.boardInfo.find('k', 'white')[0];
 		const blackKing = this.boardInfo.find('k', 'black')[0];
 		if (whiteKing.possibleMoves(this.boardInfo).length === 0 || blackKing.possibleMoves(this.boardInfo).length === 0) {
-			this.mate = true;
+			if (this.check) {
+				this.mate = true;
+			}
 		}
 
 		if (symbol === 'k') {

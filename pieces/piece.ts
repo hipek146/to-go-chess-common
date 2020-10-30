@@ -1,17 +1,6 @@
-import { findIndex } from "rxjs/operator/findIndex";
 import { BoardInfo } from "../core/board-info";
-
-export interface Move {
-    row: number;
-    column: number;
-    type: 'move' | 'capture' | 'kingsideCastle' | 'queensideCastle';
-}
-
-export interface PieceConfig {
-    color: 'white' | 'black';
-    row: number;
-    column: number;
-}
+import { Move } from "./move";
+import { PieceConfig } from "./piece-config";
 
 export abstract class Piece {
     color: 'white' | 'black';
