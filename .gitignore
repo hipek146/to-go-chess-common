@@ -1,4 +1,6 @@
 /node_modules
 /.idea
-*.js
 *.js.map
+/interfaces/*.js
+/core/*.js
+/pieces/*.js
