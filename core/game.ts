@@ -224,6 +224,14 @@ export class Game {
 			}
 			offset++;
 		}
+		else if(move[offset] !== 'x' && ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'x'].includes(move[offset + 2])) {
+			specifiedColumn = move[offset].charCodeAt(0) - 'a'.charCodeAt(0) + 1;
+			specifiedRow = Number(move[offset + 1]);
+			if (specifiedRow > 8 || specifiedRow < 1 || specifiedColumn > 8 || specifiedColumn < 1) {
+				throw new Error('invalid move');
+			}
+			offset += 2;
+		}
 
 		if (move[offset] === 'x') {
 			type = 'capture';
@@ -235,10 +243,10 @@ export class Game {
 		const destinationRow = Number(move[offset]);
 		offset++;
 
-		move = move.slice(0, offset);
 
 		if (symbol === 'p' && move[offset] === '=' && ['Q', 'R', 'N', 'B'].includes(move[offset + 1])) {
 			promotion = this.turn.color === 'white' ? move[offset + 1] : move[offset + 1].toLowerCase();
+			offset += 2;
 		}
 
 		if (symbol === 'p' && (destinationRow === 1 || destinationRow === 8) && !promotion) {
@@ -249,14 +257,17 @@ export class Game {
 			throw new Error ('invalid move');
 		}
 
+		move = move.slice(0, offset);
+
 		let pieces = this.boardInfo.find(symbol, this.turn.color).filter(piece => {
 				return piece.checkMove(this.boardInfo, destinationRow, destinationColumn, type);
 		});
 		pieces = pieces.filter(piece =>{
-			if(specifiedRow) return piece.row === specifiedRow;
+			if(specifiedRow && specifiedColumn) return piece.row === specifiedRow && piece.column === specifiedColumn;
+			else if(specifiedRow) return piece.row === specifiedRow;
 			else if(specifiedColumn) return piece.column === specifiedColumn;
 			else return true;
-		})
+		});
 		if (pieces.length !== 1) {
 			throw new Error ('invalid move');
 		}
@@ -267,15 +278,13 @@ export class Game {
 		if (promotion) {
 			piece = this.mapToPiece(promotion, destinationRow, destinationColumn);
 		}
-		
+
 		piece.move(destinationRow, destinationColumn);
 		this.boardInfo.moved(piece, oldRow, oldColumn);
-		if (symbol === 'p' && type === 'capture' 
+		if (symbol === 'p' && type === 'capture'
 			&& destinationColumn === this.boardInfo.enPassant.column && destinationRow === this.boardInfo.enPassant.row ) {
 				this.boardInfo.capture(piece.color === 'white' ? 5 : 4, destinationColumn)
 			}
-		
-		this.boardInfo = this.boardInfo;
 
 		this.boardInfo.enPassant = {
 			row: undefined,
@@ -357,7 +366,7 @@ export class Game {
 			}
 		}
 
-		if (piece.getSymbol() !== 'p' && type !== 'capture') {
+		if (symbol !== 'p' && type !== 'capture') {
 			this.halfmoveClock++;
 		}
 		else {
@@ -443,7 +452,7 @@ export class Game {
 		const halfmoveFEN = positionFEN.substring(i, endHalfmoveIndex);
 		this.halfmoveClock = Number(halfmoveFEN);
 		i = endHalfmoveIndex + 1;
-		
+
 		const fullmoveFEN = positionFEN.substring(i);
 		this.fullmoveNumber = Number(fullmoveFEN);
 	}
@@ -493,7 +502,7 @@ export class Game {
 				+ this.boardInfo.enPassant.row;
 		}
 
-		this.positionFEN = FEN + ' ' 
+		this.positionFEN = FEN + ' '
 			+ (this.turn.color === 'white' ? 'w' : 'b') + ' '
 			+ castlingAvailability + ' '
 			+ enPassant + ' '

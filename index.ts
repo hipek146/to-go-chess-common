@@ -57,10 +57,8 @@ game.init({canvas: c, whitePlayer: g1, blackPlayer: g2});
 // g1.move('h8=B');
 // g2.move('a1=R');
 
-game.init({canvas: c, whitePlayer: g1, blackPlayer: g2, positionFEN: '3rkr2/3ppp2/1p6/7N/8/8/KP6/8 w - - 0 1'});
-g1.move('b4');
-g2.move('b5');
-g1.move('Ng7');
+game.init({canvas: c, whitePlayer: g1, blackPlayer: g2, positionFEN: 'k7/rbr5/3B1B2/8/3B1B2/8/8/1K6 w - - 0 1'});
+g1.move('Bd4e5');
 
 
 

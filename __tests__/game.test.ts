@@ -6,11 +6,11 @@ import { Chessboard } from "../core/chessboard";
 class TestPlayer implements Player {
     color: 'white' | 'black';
     emitMove: Subject<string> = new Subject<string>();
-  
+
     move(move: string) {
         this.emitMove.next(move);
     }
-  
+
     receiveMove(move: string) {}
 }
 
@@ -38,7 +38,7 @@ test("Mate test.", () => {
 
     p1.move("g4"); p2.move("Rb5+"); // check
     expect(chessboard.positionFEN).toBe("1k6/2q5/3r4/1r6/6P1/8/7P/1K6 w - - 1 2");
-   
+
     p1.move("Ka1"); p2.move("Qa7#"); // mate
     expect(chessboard.positionFEN).toBe("1k6/q7/3r4/1r6/6P1/8/7P/K7 w - - 3 3");
 
@@ -54,7 +54,7 @@ test("Castling test.", () => {
     const p2 = new TestPlayer();
     game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "r3k2r/ppp1p1pp/3q4/3p1p2/3P1P2/2PQP3/PP4PP/RN2K2R w KQkq - 0 1"});
 
-    p1.move("O-O"); // kingside castling 
+    p1.move("O-O"); // kingside castling
     expect(chessboard.positionFEN).toBe("r3k2r/ppp1p1pp/3q4/3p1p2/3P1P2/2PQP3/PP4PP/RN3RK1 b kq - 1 1");
 
     p1.move("g3"); // invalid move
@@ -105,13 +105,29 @@ test("Promotion test.", () => {
 
     p1.move("f8=R")
     expect(chessboard.positionFEN).toBe("5RNQ/4P3/k7/8/8/K7/4pp2/6nq b - - 0 3");
-    p2.move("e1=R")
+    p2.move("f1=R")
     expect(chessboard.positionFEN).toBe("5RNQ/4P3/k7/8/8/K7/4p3/5rnq w - - 0 4");
 
     p1.move("e8=B")
     expect(chessboard.positionFEN).toBe("4BRNQ/8/k7/8/8/K7/4p3/5rnq b - - 0 4");
     p2.move("e1=B")
     expect(chessboard.positionFEN).toBe("4BRNQ/8/k7/8/8/K7/8/4brnq w - - 0 5");
+});
+
+test("Specified position test.", () => {
+    const game = new Game();
+    const chessboard = new Chessboard();
+    const p1 = new TestPlayer();
+    const p2 = new TestPlayer();
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "k7/rbr5/3B1B2/8/3B1B2/8/8/1K6 w - - 0 1"});
+
+    p1.move("Bd4e5")
+    expect(chessboard.positionFEN).toBe("k7/rbr5/3B1B2/4B3/5B2/8/8/1K6 b - - 1 1");
+
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "6k1/r7/3bp3/1rp5/4B1B1/1P3rR1/2P1B1B1/1KN5 w - - 0 1"});
+
+    p1.move("Bg4xf3+")
+    expect(chessboard.positionFEN).toBe("6k1/r7/3bp3/1rp5/4B3/1P3BR1/2P1B1B1/1KN5 b - - 0 1");
 });
 
 
@@ -121,7 +137,7 @@ test("Complex game test 1.", () => {
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
     game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2});
-    
+
     p1.move("e4"); p2.move("d5");
     p1.move("exd5"); p2.move("Nf6");
     p1.move("d4"); p2.move("Nxd5");
