@@ -68,6 +68,24 @@ test("Castling test.", () => {
 });
 
 
+test("Castling test 2.", () => {
+    const game = new Game();
+    const chessboard = new Chessboard();
+    const p1 = new TestPlayer();
+    const p2 = new TestPlayer();
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "rnb1k2r/pppp3p/8/2Q5/6q1/8/P4PPP/R3KBNR w KQkq - 0 1"});
+
+    p1.move("O-O-O"); // queenside castling - invalid move
+    expect(chessboard.positionFEN).toBe("rnb1k2r/pppp3p/8/2Q5/6q1/8/P4PPP/R3KBNR w KQkq - 0 1");
+
+    p1.move("f3"); // random move
+    expect(chessboard.positionFEN).toBe("rnb1k2r/pppp3p/8/2Q5/6q1/5P2/P5PP/R3KBNR b KQkq - 0 1");
+
+    p2.move("O-O"); // kingside castling - invalid move
+    expect(chessboard.positionFEN).toBe("rnb1k2r/pppp3p/8/2Q5/6q1/5P2/P5PP/R3KBNR b KQkq - 0 1");
+});
+
+
 test("En passant test.", () => {
     const game = new Game();
     const chessboard = new Chessboard();
