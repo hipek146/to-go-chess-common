@@ -1,6 +1,5 @@
 import { Subject } from "rxjs";
 import { Player } from "../interfaces/player";
-import * as WebSocket from 'ws';
 
 export class SocketPlayer implements Player {
     color: 'white' | 'black';
@@ -9,12 +8,12 @@ export class SocketPlayer implements Player {
 
     constructor(ws: WebSocket) {
         this.webSocket = ws;
-        ws.on('message', (message) => {
-            let msg = JSON.parse(String(message));
+        ws.onmessage = (event) => {
+            let msg = JSON.parse(String(event.data));
             if (msg.type === 'receive') {
                 this.move(msg.move);
             }
-        });
+        };
     }
 
     move(move: string) {
