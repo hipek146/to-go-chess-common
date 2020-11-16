@@ -4,3 +4,4 @@
 /interfaces/*.js
 /core/*.js
 /pieces/*.js
+/timer/*.js
