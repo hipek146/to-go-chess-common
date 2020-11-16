@@ -1,9 +1,11 @@
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { Canvas } from '../interfaces/canvas';
 import { Player } from '../interfaces/player';
 import { BoardInfo } from './board-info';
 
 export class Game {
+
+	event: Subject<any> = new Subject<any>();
 
 	private whitePlayer: Player;
 	private blackPlayer: Player;
@@ -54,6 +56,7 @@ export class Game {
 				if (player.color === 'white') {
 					if (this.mate) {
 						this.blackPlayer.receiveMove(move + '#');
+						this.event.next({type: 'mate', data: 'white'});
 					}
 					else if (this.check) {
 						this.blackPlayer.receiveMove(move + '+');
@@ -65,6 +68,7 @@ export class Game {
 				else {
 					if (this.mate) {
 						this.whitePlayer.receiveMove(move + '#');
+						this.event.next({type: 'mate', data: 'black'});
 					}
 					else if (this.check) {
 						this.whitePlayer.receiveMove(move + '+');
@@ -202,7 +206,7 @@ export class Game {
 		move = move.slice(0, offset);
 
 		let pieces = this.boardInfo.find(symbol, this.boardInfo.turn).filter(piece => {
-				return piece.checkMove(this.boardInfo, destinationRow, destinationColumn, type);
+			return piece.checkMove(this.boardInfo, destinationRow, destinationColumn, type);
 		});
 		pieces = pieces.filter(piece =>{
 			if(specifiedRow && specifiedColumn) return piece.row === specifiedRow && piece.column === specifiedColumn;
@@ -225,8 +229,8 @@ export class Game {
 		this.boardInfo.moved(piece, oldRow, oldColumn);
 		if (symbol === 'p' && type === 'capture'
 			&& destinationColumn === this.boardInfo.enPassant.column && destinationRow === this.boardInfo.enPassant.row ) {
-				this.boardInfo.capture(piece.color === 'white' ? 5 : 4, destinationColumn)
-			}
+			this.boardInfo.capture(piece.color === 'white' ? 5 : 4, destinationColumn)
+		}
 
 		this.boardInfo.enPassant = {
 			row: undefined,
