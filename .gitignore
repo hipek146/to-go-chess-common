@@ -5,3 +5,4 @@
 /core/*.js
 /pieces/*.js
 /timer/*.js
+/game_tree/*.js
