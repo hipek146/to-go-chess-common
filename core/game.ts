@@ -324,4 +324,8 @@ export class Game {
 			this.boardInfo.castlingAvailability.black = {kingside: false, queenside: false};
 		}
 	}
+
+	getBoardInfo() {
+		return this.boardInfo;
+	}
 }
