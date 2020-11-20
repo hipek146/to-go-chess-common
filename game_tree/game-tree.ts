@@ -1,36 +1,58 @@
 import TreeNode from './tree-node';
 
 class GameTree {
-    tail: TreeNode = undefined;
-    leaves: TreeNode[] = [];
+    root: TreeNode = undefined;
+    leaf: TreeNode = undefined;
 
     addMove = (move: string, positionFEN: string) => {
         let node = new TreeNode(move, positionFEN);
-        if (this.tail === undefined) {
-            this.tail = node;
+        if (this.leaf === undefined && this.root === undefined) {
+            this.root = node;
+            this.leaf = node;
         } else {
-            // remove tail from leaves array (isn't necessarily last element in array)
-            let index = this.leaves.indexOf(this.tail);
-            if (index !== -1) {
-                this.leaves.splice(index, 1);
-            }
-
-            this.leaves.push(node);
-            node.addPrevious(this.tail);
-            this.tail = node;
+            node.addParent(this.leaf);
+            this.leaf.addChild(node);
+            this.leaf = node;
         }
         return node;
      }
 
-    moveTail = (newTail: TreeNode) => {
-        this.tail = newTail;
+    setLeaf = (leaf: TreeNode) => {
+        this.leaf = leaf;
     }
 
-    print = () => {
-        let ancestors = this.tail.getAncestors();
-        ancestors.forEach(el => {
-            console.log(el.toString());
-        });
+    getChild = () => {
+        return this.leaf.getMainChild();
+    }
+
+    getParent = () => {
+        return this.leaf.getParent();
+    }
+
+    setMainRoute = (node: TreeNode) => {
+        let mainChild = node;
+        for(let parent = node.getParent(); parent !== undefined; parent = parent.getParent()) {
+            if (parent.getMainChild() !== mainChild) {
+                parent.setMainChild(mainChild);
+                return;
+            }
+            mainChild = parent;
+        }
+    }
+
+    traverse = (node: TreeNode, result = []) => {
+        if (node === undefined) return;
+        let branchResult = [];
+        for(const child of node.getChildren()) {
+            if (child !== node.getMainChild()) {
+                this.traverse(child, branchResult);
+            }
+        }
+        result.push(node.toString());
+        if (branchResult.length !== 0) {
+            result.push(branchResult);
+        }
+        this.traverse(node.getMainChild(), result);
     }
 }
 

@@ -1,28 +1,45 @@
 class TreeNode {
     move: string;
     positionFEN: string;
-    private previous: TreeNode;
+    private parent: TreeNode;
+    private mainChild: TreeNode;
+    private children: TreeNode[];
 
     constructor(move: string, positionFEN: string) {
         this.move = move;
         this.positionFEN = positionFEN;
-        this.previous = undefined;
+        this.parent = undefined;
+        this.mainChild = undefined;
+        this.children = [];
     }
 
-    addPrevious = (previous: TreeNode) => {
-        this.previous = previous;
+    addParent = (parent: TreeNode) => {
+        this.parent = parent;
     }
+
+    getParent = () => this.parent;
+
+    addChild = (child: TreeNode) => {
+        if (this.children.length === 0) {
+            this.mainChild = child;
+        }
+        this.children.push(child);
+    }
+
+    getChildren = () => this.children;
+
+    setMainChild = (child: TreeNode) => {
+        if (this.children.includes(child)) {
+            this.mainChild = child;
+        } else {
+            throw new Error("Setting main child unsuccessful: this node does not have such child.");
+        }
+    }
+
+    getMainChild = () => this.mainChild;
 
     toString = () => {
         return this.move;
-    }
-
-    getAncestors = () => {
-        let ancestors: TreeNode[] = [this];
-        for (let prev = this.previous; prev != undefined; prev = prev.previous) {
-            ancestors.push(prev);
-        }
-        return ancestors;
     }
 }
 
