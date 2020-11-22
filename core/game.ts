@@ -3,6 +3,8 @@ import { Canvas } from '../interfaces/canvas';
 import { Player } from '../interfaces/player';
 import { BoardInfo } from './board-info';
 import GameTree from '../game_tree/game-tree';
+import ChessClock from '../timer/chess-clock';
+import ChessClockConfig from '../timer/chess-clock-config';
 
 export class Game {
 	
@@ -17,6 +19,7 @@ export class Game {
 	private positionFEN: string;
 	
 	private boardInfo: BoardInfo;
+	private chessClock: ChessClock;
 
 	private whiteSubscription: Subscription;
 	private blackSubscription: Subscription;
@@ -26,12 +29,13 @@ export class Game {
 
 	private STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-	init(config: {canvas: Canvas, whitePlayer: Player, blackPlayer: Player, positionFEN?: string}) {
+	init(config: {canvas: Canvas, whitePlayer: Player, blackPlayer: Player, chessClockConfig: ChessClockConfig, positionFEN?: string}) {
 		this.canvas = config.canvas;
 		this.whitePlayer = config.whitePlayer;
 		this.blackPlayer = config.blackPlayer;
 		this.boardInfo = new BoardInfo();
 		this.gameTree = new GameTree(this.STARTING_FEN);
+		this.chessClock = new ChessClock(config.chessClockConfig);
 
 		this.positionFEN = config.positionFEN || this.STARTING_FEN;
 
@@ -47,6 +51,7 @@ export class Game {
 
 
 		this.canvas.draw(this.positionFEN);
+		this.chessClock.startCountdown();
 	}
 
 	private onMove(player: Player, move: string) {
@@ -56,11 +61,13 @@ export class Game {
 				this.positionFEN = this.boardInfo.toFEN();
 				this.gameTree.addMove(move, this.positionFEN);
 				this.canvas.draw(this.positionFEN);
+				this.chessClock.switchClock();
 
 				if (player.color === 'white') {
 					if (this.mate) {
 						this.blackPlayer.receiveMove(move + '#');
 						this.event.next({type: 'mate', data: 'white'});
+						this.chessClock.stopCountdown();
 					}
 					else if (this.check) {
 						this.blackPlayer.receiveMove(move + '+');
@@ -73,6 +80,7 @@ export class Game {
 					if (this.mate) {
 						this.whitePlayer.receiveMove(move + '#');
 						this.event.next({type: 'mate', data: 'black'});
+						this.chessClock.stopCountdown();
 					}
 					else if (this.check) {
 						this.whitePlayer.receiveMove(move + '+');
@@ -331,5 +339,13 @@ export class Game {
 
 	getBoardInfo() {
 		return this.boardInfo;
+	}
+
+	getTimes() {
+		return this.chessClock.getTimes();
+	}
+
+	stopClock() {
+		this.chessClock.stopCountdown();
 	}
 }

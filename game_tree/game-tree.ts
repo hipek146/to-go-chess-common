@@ -53,12 +53,21 @@ class GameTree {
             }
         }
         if (node.move !== undefined) {
-            result.push(node.toString());
+            result.push({
+                move: node.move,
+                positionFEN: node.positionFEN
+            });
         }
         if (branchResult.length !== 0) {
             result.push(branchResult);
         }
         this.traverse(node.getMainChild(), result);
+    }
+
+    toSerializable = () => {
+        let result = [];
+        this.traverse(this.root, result);
+        return result;
     }
 }
 

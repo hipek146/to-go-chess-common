@@ -23,12 +23,12 @@ class Timer {
 
         this.running = true;
         this.interval = setInterval(() => {
-            this.ms -= this.step;
+            this.ms -= this.step * 10;
             if (this.ms <= 0) {
                 this.finished = true;
                 clearInterval(this.interval);
             }
-        }, 1);
+        }, 10); // it turns out that 10ms is the lowest step
     }
 
     stop = () => {
@@ -50,7 +50,7 @@ class Timer {
         let seconds = Math.floor(this.ms / 1000);
         let minutes = Math.floor(seconds / 60);
         seconds = seconds % 60;
-
+    
         return {
             minutes,
             seconds,
