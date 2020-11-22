@@ -3,6 +3,10 @@ import TreeNode from './tree-node';
 class GameTree {
     root: TreeNode = undefined;
     leaf: TreeNode = undefined;
+    
+    constructor(positionFEN: string) {
+        this.addMove(undefined, positionFEN);
+    }
 
     addMove = (move: string, positionFEN: string) => {
         let node = new TreeNode(move, positionFEN);
@@ -48,7 +52,9 @@ class GameTree {
                 this.traverse(child, branchResult);
             }
         }
-        result.push(node.toString());
+        if (node.move !== undefined) {
+            result.push(node.toString());
+        }
         if (branchResult.length !== 0) {
             result.push(branchResult);
         }

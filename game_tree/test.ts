@@ -1,6 +1,6 @@
 import GameTree from './game-tree';
 
-let gt = new GameTree();
+let gt = new GameTree('fen');
 let m1 = gt.addMove('1', 'pos');
 let m2 = gt.addMove('2', 'pos');
 let m3 = gt.addMove('3', 'pos');
@@ -21,13 +21,13 @@ let result = [];
 gt.traverse(gt.root, result)
 console.log(result)
 
-gt.setMainRoute(m7);
-result = []
-gt.traverse(gt.root, result)
-console.log(result)
+// gt.setMainRoute(m7);
+// result = []
+// gt.traverse(gt.root, result)
+// console.log(result)
 
-gt.setMainRoute(m11);
-result = []
-gt.traverse(gt.root, result)
-console.log(result)
+// gt.setMainRoute(m11);
+// result = []
+// gt.traverse(gt.root, result)
+// console.log(result)
 

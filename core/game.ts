@@ -2,20 +2,21 @@ import { Subscription, Subject } from 'rxjs';
 import { Canvas } from '../interfaces/canvas';
 import { Player } from '../interfaces/player';
 import { BoardInfo } from './board-info';
+import GameTree from '../game_tree/game-tree';
 
 export class Game {
-
+	
 	event: Subject<any> = new Subject<any>();
-
+	gameTree: GameTree;
+	
 	private whitePlayer: Player;
 	private blackPlayer: Player;
-
+	
 	private canvas: Canvas;
-
+	
 	private positionFEN: string;
-
+	
 	private boardInfo: BoardInfo;
-
 
 	private whiteSubscription: Subscription;
 	private blackSubscription: Subscription;
@@ -23,13 +24,16 @@ export class Game {
 	private check: boolean;
 	private mate: boolean;
 
+	private STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
 	init(config: {canvas: Canvas, whitePlayer: Player, blackPlayer: Player, positionFEN?: string}) {
 		this.canvas = config.canvas;
 		this.whitePlayer = config.whitePlayer;
 		this.blackPlayer = config.blackPlayer;
 		this.boardInfo = new BoardInfo();
+		this.gameTree = new GameTree(this.STARTING_FEN);
 
-		this.positionFEN = config.positionFEN || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+		this.positionFEN = config.positionFEN || this.STARTING_FEN;
 
 		this.boardInfo.fromFEN(this.positionFEN);
 
@@ -45,12 +49,12 @@ export class Game {
 		this.canvas.draw(this.positionFEN);
 	}
 
-
 	private onMove(player: Player, move: string) {
 		if (this.boardInfo.turn === player.color) {
 			try {
 				move = this.changePosition(move);
 				this.positionFEN = this.boardInfo.toFEN();
+				this.gameTree.addMove(move, this.positionFEN);
 				this.canvas.draw(this.positionFEN);
 
 				if (player.color === 'white') {
