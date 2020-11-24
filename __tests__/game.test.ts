@@ -2,6 +2,7 @@ import { Subject } from "rxjs";
 import { Game } from "../core/game";
 import { Player } from "../interfaces/player";
 import { Chessboard } from "../core/chessboard";
+import ChessClockConfig from "../timer/chess-clock-config";
 
 class TestPlayer implements Player {
     color: 'white' | 'black';
@@ -14,18 +15,31 @@ class TestPlayer implements Player {
     receiveMove(move: string) {}
 }
 
+const config: ChessClockConfig = {
+    initMsBlack: 40000,
+    initMsWhite: 40000,
+    stepBlack: 1,
+    stepWhite: 1,
+    mode: {
+      type: 'standard',
+    },
+    endCallback: (winner: string) => {
+      console.log(winner + 'wins');
+    }
+}
 
 test("Check test.", () => {
     const game = new Game();
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "rnb2bnr/ppp1k1pp/5p2/8/8/2PQ4/P4PPP/RNB1KBNR w KQ - 1 8"});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "rnb2bnr/ppp1k1pp/5p2/8/8/2PQ4/P4PPP/RNB1KBNR w KQ - 1 8"});
 
     p1.move("Qe3+"); // check
     expect(chessboard.positionFEN).toBe("rnb2bnr/ppp1k1pp/5p2/8/8/2P1Q3/P4PPP/RNB1KBNR b KQ - 2 8");
     p2.move("Kd7"); p1.move("Qd4+"); // check
     expect(chessboard.positionFEN).toBe("rnb2bnr/pppk2pp/5p2/8/3Q4/2P5/P4PPP/RNB1KBNR b KQ - 4 9");
+    game.stopClock();
 });
 
 
@@ -34,7 +48,7 @@ test("Mate test.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "1k6/2q5/3r4/4r3/8/8/6PP/1K6 w - - 0 1"});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "1k6/2q5/3r4/4r3/8/8/6PP/1K6 w - - 0 1"});
 
     p1.move("g4"); p2.move("Rb5+"); // check
     expect(chessboard.positionFEN).toBe("1k6/2q5/3r4/1r6/6P1/8/7P/1K6 w - - 1 2");
@@ -44,6 +58,7 @@ test("Mate test.", () => {
 
     p1.move("h4"); // invalid move
     expect(chessboard.positionFEN).toBe("1k6/q7/3r4/1r6/6P1/8/7P/K7 w - - 3 3");
+    game.stopClock();
 });
 
 
@@ -52,7 +67,7 @@ test("Castling test.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "r3k2r/ppp1p1pp/3q4/3p1p2/3P1P2/2PQP3/PP4PP/RN2K2R w KQkq - 0 1"});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "r3k2r/ppp1p1pp/3q4/3p1p2/3P1P2/2PQP3/PP4PP/RN2K2R w KQkq - 0 1"});
 
     p1.move("O-O"); // kingside castling
     expect(chessboard.positionFEN).toBe("r3k2r/ppp1p1pp/3q4/3p1p2/3P1P2/2PQP3/PP4PP/RN3RK1 b kq - 1 1");
@@ -65,6 +80,7 @@ test("Castling test.", () => {
 
     p1.move("Ra5"); // invalid move
     expect(chessboard.positionFEN).toBe("2kr3r/ppp1p1pp/3q4/3p1p2/3P1P2/2PQP3/PP4PP/RN3RK1 w - - 2 2");
+    game.stopClock();
 });
 
 
@@ -73,7 +89,7 @@ test("Castling test 2.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "rnb1k2r/pppp3p/8/2Q5/6q1/8/P4PPP/R3KBNR w KQkq - 0 1"});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "rnb1k2r/pppp3p/8/2Q5/6q1/8/P4PPP/R3KBNR w KQkq - 0 1"});
 
     p1.move("O-O-O"); // queenside castling - invalid move
     expect(chessboard.positionFEN).toBe("rnb1k2r/pppp3p/8/2Q5/6q1/8/P4PPP/R3KBNR w KQkq - 0 1");
@@ -83,6 +99,7 @@ test("Castling test 2.", () => {
 
     p2.move("O-O"); // kingside castling - invalid move
     expect(chessboard.positionFEN).toBe("rnb1k2r/pppp3p/8/2Q5/6q1/5P2/P5PP/R3KBNR b KQkq - 0 1");
+    game.stopClock();
 });
 
 
@@ -91,7 +108,7 @@ test("En passant test.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config});
 
     p1.move("e4"); p2.move("d5");
     p1.move("e5"); p2.move("f5");
@@ -101,6 +118,7 @@ test("En passant test.", () => {
     p1.move("d3"); p2.move("exf6");
     p1.move("c4"); p2.move ("dxc3"); // en passant
     expect(chessboard.positionFEN).toBe("rnbqkbnr/ppp3pp/5p2/8/8/2pP4/PP3PPP/RNBQKBNR w KQkq - 0 6");
+    game.stopClock();
 });
 
 
@@ -109,7 +127,7 @@ test("Promotion test.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "8/4PPPP/k7/8/8/K7/4pppp/8 w - - 0 1"});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "8/4PPPP/k7/8/8/K7/4pppp/8 w - - 0 1"});
 
     p1.move("h8=Q")
     expect(chessboard.positionFEN).toBe("7Q/4PPP1/k7/8/8/K7/4pppp/8 b - - 0 1");
@@ -130,6 +148,7 @@ test("Promotion test.", () => {
     expect(chessboard.positionFEN).toBe("4BRNQ/8/k7/8/8/K7/4p3/5rnq b - - 0 4");
     p2.move("e1=B")
     expect(chessboard.positionFEN).toBe("4BRNQ/8/k7/8/8/K7/8/4brnq w - - 0 5");
+    game.stopClock();
 });
 
 test("Specified position test.", () => {
@@ -137,15 +156,17 @@ test("Specified position test.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "k7/rbr5/3B1B2/8/3B1B2/8/8/1K6 w - - 0 1"});
-
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "k7/rbr5/3B1B2/8/3B1B2/8/8/1K6 w - - 0 1"});
+    game.stopClock();
+    
     p1.move("Bd4e5")
     expect(chessboard.positionFEN).toBe("k7/rbr5/3B1B2/4B3/5B2/8/8/1K6 b - - 1 1");
 
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, positionFEN: "6k1/r7/3bp3/1rp5/4B1B1/1P3rR1/2P1B1B1/1KN5 w - - 0 1"});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "6k1/r7/3bp3/1rp5/4B1B1/1P3rR1/2P1B1B1/1KN5 w - - 0 1"});
 
     p1.move("Bg4xf3+")
     expect(chessboard.positionFEN).toBe("6k1/r7/3bp3/1rp5/4B3/1P3BR1/2P1B1B1/1KN5 b - - 0 1");
+    game.stopClock();
 });
 
 
@@ -154,7 +175,7 @@ test("Complex game test 1.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config});
 
     p1.move("e4"); p2.move("d5");
     p1.move("exd5"); p2.move("Nf6");
@@ -189,6 +210,7 @@ test("Complex game test 1.", () => {
     p1.move("Rd5"); p2.move("g4");
     p1.move("hxg4");
     expect(chessboard.positionFEN).toBe("5k2/ppp5/4P3/3R3p/6P1/1K2Nr2/PP3P2/8 b - - 0 32");
+    game.stopClock();
 });
 
 
@@ -197,7 +219,7 @@ test("Complex game test 2.", () => {
     const chessboard = new Chessboard();
     const p1 = new TestPlayer();
     const p2 = new TestPlayer();
-    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2});
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config});
 
     p1.move("d4"); p2.move("Nf6");
     p1.move("c4"); p2.move("e6");
@@ -220,4 +242,5 @@ test("Complex game test 2.", () => {
     p1.move("Qe2"); p2.move("Qg5");
     p1.move("Kh1"); p2.move("Nxf1");
     expect(chessboard.positionFEN).toBe("r3k2r/bp1b1pp1/p2pp3/6q1/1PP4p/P1BB2NP/4QPP1/2R2n1K w kq - 0 21");
+    game.stopClock();
 });
