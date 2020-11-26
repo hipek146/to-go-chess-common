@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 import { BoardInfo } from "./board-info";
 import { Player } from "../interfaces/player";
-var STOCKFISH = require("stockfish");
+var stockfish = require("stockfish");
 
 export class StockfishPlayer implements Player {
     color: 'white' | 'black';
@@ -13,17 +13,19 @@ export class StockfishPlayer implements Player {
 
     constructor(depth: number) {
         this.depth = depth;
-        this.stockfish = STOCKFISH();
+        this.stockfish = stockfish();
 
         this.stockfish.onmessage = (message) => {
             let stockfishMove = message.match(this.re);
             if (stockfishMove) {
                 let parsedMove = parseToPGN(this.boardInfo, stockfishMove[1]);
-                this.move(parsedMove);
+                if (parsedMove) {
+                    this.move(parsedMove);
+                }
             }
         };
     }
-    
+
     setBoardInfo(boardInfo: BoardInfo) {
         this.boardInfo = boardInfo;
     }
@@ -31,9 +33,8 @@ export class StockfishPlayer implements Player {
     move(move: string) {
         this.emitMove.next(move);
     }
-    
+
     receiveMove(move: string) {
-        console.log(`Received move: ${move}.`)
         this.makeBestMove();
     }
 
@@ -71,6 +72,8 @@ const getIndex = (col) => {
 
 const parseToPGN = (boardInfo: BoardInfo, secondPieceParse: string) => {
     let firstPiece = boardInfo.get(parseInt(secondPieceParse[1]), getIndex(secondPieceParse[0]));
+    if (!firstPiece) return null;
+
     let secondPiece = {
         column: getIndex(secondPieceParse[2]),
         row: parseInt(secondPieceParse[3]),
@@ -102,31 +105,17 @@ const parseToPGN = (boardInfo: BoardInfo, secondPieceParse: string) => {
         samePieces = samePieces.filter(piece => !(piece.column === firstPiece.column && piece.row === firstPiece.row));
         if (samePieces.some(piece => piece.row === firstPiece.row)) {
             toAdd += 'abcdefgh'[firstPiece.column - 1];
-        } 
+        }
         if (samePieces.some(piece => piece.column === firstPiece.column)) {
             toAdd += firstPiece.row;
-        } 
+        }
         if (toAdd.length === 0 && samePieces.length !== 0) {
             toAdd += 'abcdefgh'[firstPiece.column - 1];
         }
         if (move.type === 'capture') toAdd += 'x';
         movePGN += toAdd;
         movePGN += 'abcdefgh'[secondPiece.column - 1] + secondPiece.row;
-    } 
+    }
 
     return movePGN;
 }
-
-import { Game } from "./game";
-import { Chessboard } from "./chessboard";
-import { ChessPlayer } from './chess-player';
-
-const game = new Game();
-const c = new Chessboard();
-const g1 = new StockfishPlayer(10);
-const g2 = new ChessPlayer();
-game.init({canvas: c, whitePlayer: g1, blackPlayer: g2});
-g1.setBoardInfo(game.getBoardInfo());
-
-g1.move("d4");
-g2.move("e5");
