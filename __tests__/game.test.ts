@@ -169,6 +169,28 @@ test("Specified position test.", () => {
     game.stopClock();
 });
 
+test("Draw test.", () => {
+    const game = new Game();
+    const chessboard = new Chessboard();
+    const p1 = new TestPlayer();
+    const p2 = new TestPlayer();
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "7k/4Q3/8/8/8/8/1K6/8 w - - 0 1"});
+
+    p1.move("Qf7")
+    expect(game.isDraw()).toBe(true);
+
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "7k/8/8/4n3/2N5/8/1K6/8 w - - 0 1"});
+
+    p1.move("Nxe5")
+    expect(game.isDraw()).toBe(true);
+
+    game.init({canvas: chessboard, whitePlayer: p1, blackPlayer: p2, chessClockConfig: config, positionFEN: "5b1k/8/8/4n3/2N5/8/1K6/8 w - - 0 1"});
+
+    p1.move("Nxe5")
+    expect(game.isDraw()).toBe(false);
+    game.stopClock();
+});
+
 
 test("Complex game test 1.", () => {
     const game = new Game();

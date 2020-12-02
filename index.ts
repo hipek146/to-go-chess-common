@@ -3,6 +3,7 @@ import { Game } from "./core/game";
 import { Chessboard } from "./core/chessboard";
 import { Player } from "./interfaces/player";
 import ChessClockConfig from "./timer/chess-clock-config";
+import ChessClock from "./timer/chess-clock";
 
 const game = new Game();
 
@@ -42,30 +43,35 @@ const config: ChessClockConfig = {
     console.log(winner + 'wins');
   }
 }
+game.init({canvas: c, whitePlayer: g1, blackPlayer: g2, chessClockConfig: config, positionFEN: "5b1k/8/8/4n3/2N5/8/1K6/8 w - - 0 1"});
 
-game.init({canvas: c, whitePlayer: g1, chessClockConfig: config, blackPlayer: g2});
+g1.move("Nxe5")
+console.log(game.isDraw())
+game.stopClock();
 
-
-sleep(1000).then(() => {
-  g1.move("d4");
-  sleep(1000).then(() => {
-    g2.move("e5");
-    sleep(1000).then(() => {
-      g1.move("Nf3");
-      sleep(1000).then(() => {
-        g1.move("Nf3");
-        sleep(1000).then(() => {
-          g2.move("Nc6");
-          let result = [];
-          game.gameTree.traverse(game.gameTree.root, result)
-          console.log(result)
-          game.stopClock();
-          console.log(game.getTimes())
-        });
-      });
-    });
-  });
-});
+// game.init({canvas: c, whitePlayer: g1, chessClockConfig: config, blackPlayer: g2});
+//
+//
+// sleep(1000).then(() => {
+//   g1.move("d4");
+//   sleep(1000).then(() => {
+//     g2.move("e5");
+//     sleep(1000).then(() => {
+//       g1.move("Nf3");
+//       sleep(1000).then(() => {
+//         g1.move("Nf3");
+//         sleep(1000).then(() => {
+//           g2.move("Nc6");
+//           let result = [];
+//           game.getTree().traverse(game.getTree().root, result)
+//           console.log(result)
+//           game.stopClock();
+//           console.log(game.getTimes())
+//         });
+//       });
+//     });
+//   });
+// });
 
 // g1.move('e4');
 // g2.move('e6');
