@@ -7,15 +7,15 @@ import ChessClock from "../timer/chess-clock";
 import ChessClockConfig from "../timer/chess-clock-config";
 
 export class Game {
-	
+
 	event: Subject<any> = new Subject<any>();
-	
+
 	whitePlayer: Player;
 	blackPlayer: Player;
-	
+
 	private gameTree: GameTree;
 	private canvas: Canvas;
-	
+
 	private positionFEN: string;
 	private boardInfo: BoardInfo;
 
@@ -27,6 +27,8 @@ export class Game {
 	private check: boolean;
 	private mate: boolean;
 	private draw: boolean;
+	private drawOffer: boolean;
+	private drawOfferColor: string;
 
 	private STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
@@ -38,6 +40,8 @@ export class Game {
 		this.gameTree = new GameTree(this.STARTING_FEN);
 		this.chessClock = new ChessClock(config.chessClockConfig);
 		this.draw = false;
+		this.drawOffer = false;
+		this.drawOfferColor = '';
 
 		this.positionFEN = config.positionFEN || this.STARTING_FEN;
 
@@ -58,13 +62,27 @@ export class Game {
 
 	private onMove(player: Player, move: string) {
 		if (move === 'draw') {
-			if (player.color === 'white') {
-				this.blackPlayer.receiveMove('draw_offer');
-				this.event.next({type: 'draw_offer', data: 'white'});
+			if (this.drawOffer && this.drawOfferColor !== player.color) {
+				this.draw = true;
+				this.event.next({type: 'draw', data: ''});
+				if (player.color === 'white') {
+					this.blackPlayer.receiveMove('draw');
+				}
+				else {
+					this.whitePlayer.receiveMove('draw');
+				}
 			}
-			else {
-				this.whitePlayer.receiveMove('draw_offer');
-				this.event.next({type: 'draw_offer', data: 'black'});
+			else if (!this.drawOffer) {
+				this.drawOffer = true;
+				if (player.color === 'white') {
+					this.drawOfferColor = 'white';
+					this.blackPlayer.receiveMove('draw');
+					this.event.next({type: 'draw_offer', data: 'white'});
+				} else {
+					this.drawOfferColor = 'black';
+					this.whitePlayer.receiveMove('draw');
+					this.event.next({type: 'draw_offer', data: 'black'});
+				}
 			}
 		} else if (move === 'surrender') {
 			if (player.color === 'white') {
@@ -83,6 +101,8 @@ export class Game {
 				this.gameTree.addMove(move, this.positionFEN);
 				this.canvas.draw(this.positionFEN);
 				this.chessClock.switchClock();
+				this.drawOffer = false;
+				this.drawOfferColor = '';
 
 				if (player.color === 'white') {
 					if (this.mate) {
@@ -412,7 +432,7 @@ export class Game {
 	getTurn() {
 		return this.boardInfo.turn;
 	}
-	
+
 	getTree() {
 		return this.gameTree;
 	}
