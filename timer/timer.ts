@@ -22,8 +22,10 @@ class Timer {
         }
 
         this.running = true;
+        let loopTime = Date.now();
         this.interval = setInterval(() => {
-            this.ms -= this.step * 10;
+            this.ms -= this.step * (Date.now() - loopTime);
+            loopTime = Date.now();
             if (this.ms <= 0) {
                 this.finished = true;
                 clearInterval(this.interval);
