@@ -47,6 +47,10 @@ class Timer {
         this.start();
     }
 
+    setTime = (ms: number) => {
+        this.ms = ms;
+    }
+
     getTime = () => {
         let ms = this.ms % 1000;
         let seconds = Math.floor(this.ms / 1000);
@@ -54,9 +58,10 @@ class Timer {
         seconds = seconds % 60;
     
         return {
+            fullMs: this.ms,
             minutes,
             seconds,
-            ms
+            ms,
         };
     }
 
